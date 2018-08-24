@@ -50,4 +50,5 @@ public class LearnerPredictor {
     public int predict(double[] x){
         return this.svm.predict(x);
     }
+
 }

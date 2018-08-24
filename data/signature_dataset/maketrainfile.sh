@@ -1,3 +1,4 @@
+rm train.txt
 j=1; #total file processed 
 folders=$(ls -d */) #total folders in the directory
 k=0; # folder index
@@ -8,7 +9,7 @@ do
 	echo "Directory : $f"
 	for name in *.*; do
    		echo " 	$k:$i - Processing image $name"
-		echo "  $f${name} $k" >> ../train.txt
+		echo "`pwd`/${name} $k" >> ../train.txt
     		
     		i=`expr $i + 1`
 	done

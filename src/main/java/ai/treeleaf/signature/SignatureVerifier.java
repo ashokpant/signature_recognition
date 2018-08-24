@@ -1,16 +1,16 @@
 package ai.treeleaf.signature;
 
 import org.omg.CORBA.MARSHAL;
-import org.opencv.core.Core;
-import org.opencv.core.CvType;
-import org.opencv.core.Mat;
-import org.opencv.core.Size;
+import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.objdetect.HOGDescriptor;
 import org.opencv.videoio.VideoCapture;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,7 +27,7 @@ public class SignatureVerifier {
     }
 
     public static double[] computeFeatures(String filename, Size size){
-        filename = "data/image.jpg";
+//        filename = "data/image.jpg";
         Mat img = Imgcodecs.imread(filename);
 //        System.out.println("Input image: " + filename);
 //        System.out.println(img.rows() + "x" + img.cols() + "x" + img.channels());
@@ -56,101 +56,45 @@ public class SignatureVerifier {
         Mat img3 = new Mat();
         Imgproc.threshold(img2, img3, 100, 255, Imgproc.THRESH_BINARY);
 //        HighGui.imshow("Image", img3);
-//        HighGui.waitKey(0);
+//        HighGui.waitKey(100);
+        Core.bitwise_not(img3, img3);
+//        HighGui.imshow("Image", img3);
+//        HighGui.waitKey(100);
+        Core.divide(img3,new Scalar(255), img3);
 
 
 //        Mat img4 = img3.reshape((int) (size.width*size.height),1);
 //        System.out.println(img4.rows() + "x" + img4.cols() + "x" + img4.channels());
 //        System.out.println(img4.elemSize());
-        double [] feature = img3.reshape((int) (size.width*size.height),1).get(0,0);
-        System.out.println("Features: "+Arrays.toString(feature));
+        Mat a = img3.reshape(1,1);
+        double [] feature = new double[a.cols()];
+        for (int i =0; i <feature.length; i++){
+            feature[i] = a.get(0,i)[0];
+        }
+//        System.out.println("Features: "+Arrays.toString(feature));
         return feature;
     }
 
+    public static List<String[]> read_files(String filename){
+
+        List<String[]> files = new ArrayList<>();
+        try {
+            List<String> temp = Files.readAllLines(Paths.get(filename));
+            temp.forEach(line->
+                    files.add(line.split(" ")));
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return files;
+    }
     public static void main(String[] args) throws InterruptedException {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-        Mat mat = Mat.ones(3, 3, CvType.CV_8UC1);
-        Mat mat1 = Mat.eye(3, 3, CvType.CV_8UC1);
-        System.out.println("mat = " + mat.dump());
-        System.out.println("mat1 = " + mat1.dump());
-        Mat matAdd = new Mat();
-        Core.add(mat, mat1, matAdd);
-        System.out.println("mat + mat1 = " + matAdd.dump());
-
-        String filename = "data/image.jpg";
         Size size = new Size(128,128);
-//        Mat img = Imgcodecs.imread(filename);
-//        System.out.println("Input image: " + filename);
-//        System.out.println(img.rows() + "x" + img.cols() + "x" + img.channels());
-//        HighGui.namedWindow("Image");
-//        HighGui.imshow("Image", img);
-//        HighGui.waitKey(0);
-////        System.out.println(img.dump());
-////        for (int i = 0; i < img.rows(); i++) {
-////            for (int j = 0; j < img.cols(); j++) {
-////                    System.out.println(Arrays.toString(img.get(i, j)));
-////            }
-////        }
-//
-//        Mat img1 = new Mat();
-//        Imgproc.resize(img, img1, size);
-//        System.out.println(img1.rows() + "x" + img1.cols() + "x" + img1.channels());
-//        HighGui.imshow("Image", img1);
-//        HighGui.waitKey(0);
-//
-//        Mat img2 = new Mat();
-//        Imgproc.cvtColor(img1, img2, Imgproc.COLOR_RGB2GRAY);
-//        System.out.println(img2.rows() + "x" + img2.cols() + "x" + img2.channels());
-//        HighGui.imshow("Image", img2);
-//        HighGui.waitKey(0);
-//
-//        Mat img4 = new Mat();
-//        Imgproc.threshold(img2, img4, 100, 255, Imgproc.THRESH_BINARY);
-//        HighGui.imshow("Image", img4);
-//        HighGui.waitKey(0);
-//
-//
-//        Mat img3 = img4.reshape((int) (size.width*size.height),1);
-//        System.out.println(img3.rows() + "x" + img3.cols() + "x" + img3.channels());
-//        System.out.println(img3.elemSize());
-//        double [] feature = img2.reshape((int) (size.width*size.height),1).get(0,0);
-//        System.out.println("Features: "+Arrays.toString(feature));
 
+        String datasetPath="data/signature_dataset1.txt";
+        List<String[]> files = read_files(datasetPath);
 
-//        List<double[]> features = new ArrayList<double[]>();
-//        List<Integer> targets = new ArrayList<Integer>();
-//
-//        for all image in folder{
-//            String f = "";
-//            int target = 0;
-//            double[] feature = computeFeatures(f);
-//            features.add(feature);
-//            targets.add(target);
-//        }
-        // Read file images.txt
-        // File format
-        // filename1 0
-        // filename2 0
-        // filename3 0
-        // filename4 1
-        // filename5 2
-        List<String[]> files = new ArrayList<String[]>();
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","0"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","0"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","0"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","1"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","1"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","1"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","2"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","2"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","2"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","1"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","0"});
-        files.add(new String[]{"/home/ashok/Projects/ashok/signature/data/signature_dataset/person1/image1.png","2"});
-
-        files.forEach(e->{
-            System.out.println(e[0]+" "+e[1]);
-        });
+//        files.forEach(e-> System.out.println(e[0]+" "+e[1]));
 
 
         int numSamples = files.size();
@@ -163,6 +107,7 @@ public class SignatureVerifier {
             int target = Integer.parseInt(files.get(i)[1]);
 
             double[] feat = computeFeatures(f, size);
+//            System.out.println(feat.length +" "+numFeatures);
             features[i] = feat;
             targets[i] =target;
         }
@@ -174,10 +119,13 @@ public class SignatureVerifier {
         LearnerPredictor learnerPredictor = new LearnerPredictor();
         learnerPredictor.fit(features, targets, features, targets);
         System.out.println("Training done.");
+
+//        Evaluate model (precision, recall, fscore)
+
         for (int i = 0; i<features.length; i++){
             int output = learnerPredictor.predict(features[i]);
             int target = targets[i];
-            System.out.println(output+ " "+ target);
+            System.out.println(target+ " "+ output);
         }
 
         VideoCapture videoCapture = new VideoCapture(0);
